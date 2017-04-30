@@ -5,7 +5,7 @@ namespace ConsoleApplication.Search
 {
     public class StringSearch
     {
-        public static string AutoComplete(string s, string[] array)
+        public static string AutoComplete(string s, string[] array, bool listOptions=false)
         {
             var sLower = s.ToLower();
             List<string> tempList = new List<string>();
@@ -28,6 +28,11 @@ namespace ConsoleApplication.Search
             }
             else if (tempList.Count > 1)
             {
+                if (listOptions)
+                {
+                    Program.ClearCurrentConsoleLine();
+                    Console.Write(tempList[0] + Environment.NewLine);
+                }
                 bool b = true;
                 var counter = 0;
                 while (b)
@@ -35,6 +40,11 @@ namespace ConsoleApplication.Search
                     counter++;
                     for (int i = 1; i < tempList.Count; i++)
                     {
+                        if (listOptions)
+                        {
+                            Console.WriteLine(tempList[i]);
+                        }
+
                         if (!tempList[i - 1]
                             .ToLower()
                             .Substring(0, s.Length + counter)
