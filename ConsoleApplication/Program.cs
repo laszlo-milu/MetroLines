@@ -42,8 +42,8 @@ namespace ConsoleApplication
 
             for (int i = 0; i < 3; i++)
             {
-//                Console.WriteLine(BasicTerminal());
-                BasicTerminal();
+                Console.WriteLine(BasicTerminal());
+//                BasicTerminal();
             }
         }
 

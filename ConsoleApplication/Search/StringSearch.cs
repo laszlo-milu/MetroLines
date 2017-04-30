@@ -26,6 +26,26 @@ namespace ConsoleApplication.Search
             {
                 return tempList[0];
             }
+            else if (tempList.Count > 1)
+            {
+                bool b = true;
+                var counter = 0;
+                while (b)
+                {
+                    counter++;
+                    for (int i = 1; i < tempList.Count; i++)
+                    {
+                        if (!tempList[i - 1]
+                            .ToLower()
+                            .Substring(0, s.Length + counter)
+                            .Equals(tempList[i].ToLower().Substring(0, s.Length + counter)))
+                        {
+                            b = false;
+                        }
+                    }
+                }
+                return tempList[0].Substring(0,s.Length+counter-1);
+            }
             else
             {
                 return s;
