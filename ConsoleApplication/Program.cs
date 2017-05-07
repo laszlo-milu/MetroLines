@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using ConsoleApplication.Graph;
 using ConsoleApplication.Search;
 namespace ConsoleApplication
 {
@@ -13,7 +14,7 @@ namespace ConsoleApplication
             ConsoleKey.L, ConsoleKey.M, ConsoleKey.N, ConsoleKey.O, ConsoleKey.OemPlus, ConsoleKey.Oem3, ConsoleKey.Oem4,
             ConsoleKey.P, ConsoleKey.Q, ConsoleKey.R, ConsoleKey.S, ConsoleKey.T, ConsoleKey.U, ConsoleKey.Oem6,
             ConsoleKey.Oem2, ConsoleKey.Oem5, ConsoleKey.V, ConsoleKey.W, ConsoleKey.X, ConsoleKey.Y, ConsoleKey.Z,
-            ConsoleKey.OemPeriod, ConsoleKey.OemMinus, ConsoleKey.OemComma
+            ConsoleKey.OemPeriod, ConsoleKey.OemMinus, ConsoleKey.OemComma, ConsoleKey.Spacebar
         };
         private static readonly string[] _m1Stations = new string[]
         {
@@ -38,6 +39,22 @@ namespace ConsoleApplication
         };
         private static string[] _allStations = new string[_m1Stations.Length + _m2Stations.Length + _m3Stations.Length + _m4Stations.Length];
 
+        private static List<Node> _visitedStations = new List<Node>();
+
+        public static List<Node> VisitedStations
+        {
+            get { return _visitedStations; }
+            set { _visitedStations = value; }
+        }
+
+        private static List<Node> _matches = new List<Node>();
+
+        public static List<Node> Matches
+        {
+            get { return _matches; }
+            set { _matches = value; }
+        }
+
         public static void Main(string[] args)
         {
             Array.Copy(_m1Stations, _allStations, _m1Stations.Length);
@@ -46,16 +63,178 @@ namespace ConsoleApplication
             Array.Copy(_m4Stations, 0, _allStations, _m1Stations.Length + _m2Stations.Length + _m3Stations.Length, _m4Stations.Length);
             _allStations = RemoveDuplicates(_allStations);
 
-            Console.WriteLine();
+            var station = CreateGraph();
 
-            for (int i = 0; i < 3; i++)
+            Console.WriteLine();
+//            Console.WriteLine(prev.Find(Autocomplete(),true).Name);
+            Console.WriteLine("Enter a starting point!");
+            Node start = station.Find(Autocomplete());
+            Console.WriteLine();
+            ResetGraph();
+            Console.WriteLine("Enter a destination!");
+            Node destination = station.Find(Autocomplete());
+            Console.WriteLine();
+            ResetGraph();
+            start.Find(destination.Name, true);
+
+            Matches = Optimize(start, destination);
+            for (int i = Matches.Count - 1; i >= 0; i--)
             {
-//                Console.WriteLine(BasicTerminal());
-                BasicTerminal();
+                Console.WriteLine("(" + ((i - Matches.Count) * -1) + ") " + Matches[i].Name);
             }
+
+            Autocomplete();
+
         }
 
-        private static string BasicTerminal()
+        private static List<Node> Optimize(Node start, Node target)
+        {
+            List<Node> optimized = new List<Node>(){};
+            for (int i = Matches.Count - 1; i >= 0; i--)
+            {
+                if (optimized.Count == 0 && Matches[i] == target)
+                {
+                    optimized.Add(Matches[i]);
+                }
+                else if (optimized.Count > 0)
+                {
+                    if (optimized[optimized.Count-1].Neighbors.Contains(Matches[i]))
+                    {
+                        optimized.Add(Matches[i]);
+                    }
+                    if (optimized[optimized.Count-1] == start)
+                    {
+                        break;
+                    }
+                }
+            }
+            List<Node> noDuplicates = RemoveDuplicates(optimized);
+            optimized.Clear();
+            for (int i = 0; i < noDuplicates.Count; i++)
+            {
+                if (optimized.Count == 0)
+                {
+                    optimized.Add(noDuplicates[i]);
+                }
+                else
+                {
+                    if (optimized[optimized.Count-1].Neighbors.Contains(noDuplicates[i]))
+                    {
+                        optimized.Add(noDuplicates[i]);
+                    }
+                    else
+                    {
+                        optimized.Remove(optimized[optimized.Count - 1]);
+                        i--;
+                    }
+                }
+            }
+            return optimized;
+        }
+
+        private static void ResetGraph()
+        {
+            for (int i = 0; i < VisitedStations.Count; i++)
+            {
+                VisitedStations[i].Visited = false;
+            }
+            VisitedStations.Clear();
+        }
+
+        private static Node CreateGraph()
+        {
+            Node prev = new Node(_m1Stations[0]);
+            Node deak = null;
+
+            for (int i = 1; i < _m1Stations.Length; i++)
+            {
+                Node node = new Node(_m1Stations[i], prev);
+                prev = node;
+                if (_m1Stations[i] == "Deák Ferenc tér")
+                {
+                    deak = node;
+                }
+            }
+            Node keleti = null;
+            prev = new Node(_m2Stations[0]);
+            for (int i = 1; i < _m2Stations.Length; i++)
+            {
+                Node node;
+                if (_m2Stations[i] == "Deák Ferenc tér")
+                {
+                    node = deak;
+                    deak.Neighbors.Add(prev);
+//                    Console.WriteLine(prev.Name+ " ADDED TO " + deak.Name);
+                    prev.Neighbors.Add(deak);
+//                    Console.WriteLine(deak.Name+ " ADDED TO " + prev.Name);
+
+                }
+                else
+                {
+                    node = new Node(_m2Stations[i], prev);
+                    if (_m3Stations[i] == "Keleti pályaudvar")
+                    {
+                        keleti = new Node(_m3Stations[i], prev);
+                    }
+                }
+                prev = node;
+            }
+            Node kalvin = null;
+            prev = new Node(_m3Stations[0]);
+            for (int i = 1; i < _m3Stations.Length; i++)
+            {
+                Node node;
+                if (_m3Stations[i] == "Deák Ferenc tér")
+                {
+                    node = deak;
+                    deak.Neighbors.Add(prev);
+//                    Console.WriteLine(prev.Name+ " ADDED TO " + deak.Name);
+                    prev.Neighbors.Add(deak);
+//                    Console.WriteLine(deak.Name+ " ADDED TO " + prev.Name);
+
+
+                }
+                else
+                {
+                    node = new Node(_m3Stations[i], prev);
+                    if (_m3Stations[i] == "Kálvin tér")
+                    {
+                        kalvin = new Node(_m3Stations[i], prev);
+                    }
+                }
+                prev = node;
+            }
+            prev = new Node(_m4Stations[0]);
+            for (int i = 1; i < _m4Stations.Length; i++)
+            {
+                Node node;
+                if (_m4Stations[i] == "Kálvin tér")
+                {
+                    node = kalvin;
+                    kalvin.Neighbors.Add(prev);
+                    prev.Neighbors.Add(kalvin);
+
+
+                }
+                else if (_m4Stations[i] == "Keleti pályaudvar")
+                {
+                    node = keleti;
+                    keleti.Neighbors.Add(prev);
+                    prev.Neighbors.Add(keleti);
+
+
+                }
+                else
+                {
+                    node = new Node(_m4Stations[i], prev);
+                }
+                prev = node;
+            }
+            return prev;
+        }
+
+
+        private static string Autocomplete()
         {
             string retString = "";
             string output = "";
@@ -97,10 +276,10 @@ namespace ConsoleApplication
                             Console.Write(readKeyResult.KeyChar);
                             curIndex++;
                         }
-                        else
-                        {
-                            Console.WriteLine(readKeyResult.Key.ToString());
-                        }
+//                        else
+//                        {
+//                            Console.WriteLine(readKeyResult.Key.ToString());
+//                        }
                         break;
                 }
             }
@@ -111,6 +290,13 @@ namespace ConsoleApplication
             HashSet<string> set = new HashSet<string>(s);
             string[] result = new string[set.Count];
             set.CopyTo(result);
+            return result;
+        }
+
+        public static List<Node> RemoveDuplicates(List<Node> l)
+        {
+            HashSet<Node> set = new HashSet<Node>(l);
+            List<Node> result = l.Distinct().ToList();
             return result;
         }
         public static void ClearCurrentConsoleLine()
