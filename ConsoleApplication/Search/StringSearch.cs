@@ -5,16 +5,15 @@ namespace ConsoleApplication.Search
 {
     public class StringSearch
     {
-        public static string AutoComplete(string s, string[] array, bool listOptions=false)
+        public static string AutoComplete(string s, List<string> array, bool listOptions=false)
         {
             var sLower = s.ToLower();
-            List<string> tempList = new List<string>();
-            string current;
-            for (int i = 0; i < array.Length; i++)
+            var tempList = new List<string>();
+            for (var i = 0; i < array.Count; i++)
             {
                 if (array[i].Length > sLower.Length)
                 {
-                    current = array[i].Substring(0, sLower.Length).ToLower();
+                    var current = array[i].Substring(0, sLower.Length).ToLower();
 
                     if (current.Equals(sLower))
                     {

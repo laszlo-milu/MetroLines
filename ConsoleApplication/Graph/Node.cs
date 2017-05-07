@@ -9,17 +9,22 @@ namespace ConsoleApplication.Graph
     {
         private readonly string _name;
         private List<Node> _neighbors = new List<Node>();
+        private readonly string[] _metroLines;
 
-        public Node(string name, Node neighbor=null, bool visited=false)
+        public Node(string name, string[] metroLines, Node neighbor=null, bool visited=false)
         {
             _name = name;
+            _metroLines = metroLines;
             if (neighbor != null)
             {
                 _neighbors.Add(neighbor);
-//                Console.WriteLine(Name + " ADDED TO " + neighbor.Name);
                 neighbor.Neighbors.Add(this);
-//                Console.WriteLine(neighbor.Name + " ADDED TO " + Name);
             }
+        }
+
+        public string[] MetroLines
+        {
+            get { return _metroLines; }
         }
 
         public string Name
@@ -43,7 +48,7 @@ namespace ConsoleApplication.Graph
                 if (!Visited)
                 {
                     Visited = true;
-                    Program.VisitedStations.Add(this);
+                    Graph.VisitedStations.Add(this);
                 }
 
                 if (_neighbors[i].Name == target)

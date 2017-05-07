@@ -16,36 +16,11 @@ namespace ConsoleApplication
             ConsoleKey.Oem2, ConsoleKey.Oem5, ConsoleKey.V, ConsoleKey.W, ConsoleKey.X, ConsoleKey.Y, ConsoleKey.Z,
             ConsoleKey.OemPeriod, ConsoleKey.OemMinus, ConsoleKey.OemComma, ConsoleKey.Spacebar
         };
-        private static readonly string[] _m1Stations = new string[]
-        {
-            "Vörösmarty tér", "Deák Ferenc tér", "Bajcsy-Zsilinszky út", "Opera", "Oktogon", "Vörösmarty utca",
-            "Kodály körönd", "Bajza utca", "Hősök tere", "Széchenyi Fürdő", "Mexikói út"
-        };
-        private static readonly string[] _m2Stations = new string[]
-        {
-            "Déli pályaudvar", "Széll Kálmán tér", "Batthyány tér", "Kossuth Lajos tér", "Deák Ferenc tér",
-            "Astoria", "Blaha Lujza tér", "Keleti pályaudvar", "Puskás Ferenc Stadion", "Pillangó utca", "Örs vezér tér"
-        };
-        private static readonly string[] _m3Stations = new string[]
-        {
-            "Újpest központ", "Újpest városkapu", "Gyöngyösi utca", "Forgách utca", "Árpád híd", "Dózsa György út",
-            "Lehel tér", "Nyugati pályaudvar", "Arany János utca", "Deák Ferenc tér", "Ferenciek tere", "Kálvin tér",
-            "Corvin-negyed", "Klinikák", "Nagyvárad tér", "Népliget", "Ecseri út", "Pöttyös utca", "Határ út", "Kőbánya-Kispest"
-        };
-        private static readonly string[] _m4Stations = new string[]
-        {
-            "Keleti pályaudvar", "II. János Pál pápa tér", "Rákóczi tér", "Kálvin tér", "Fővám tér", "Szent Gellért tér",
-            "Móricz Zsigmond körtér", "Újbuda központ", "Bikás park", "Kelenföldi pályaudvar"
-        };
-        private static string[] _allStations = new string[_m1Stations.Length + _m2Stations.Length + _m3Stations.Length + _m4Stations.Length];
 
-        private static List<Node> _visitedStations = new List<Node>();
-
-        public static List<Node> VisitedStations
-        {
-            get { return _visitedStations; }
-            set { _visitedStations = value; }
-        }
+        private static readonly List<string> _allStations = RemoveDuplicates(Graph.Graph.m1Stations.Concat(Graph.Graph.m2Stations)
+                                                                         .Concat(Graph.Graph.m3Stations)
+                                                                         .Concat(Graph.Graph.m4Stations)
+                                                                         .ToList());
 
         private static List<Node> _matches = new List<Node>();
 
@@ -57,182 +32,102 @@ namespace ConsoleApplication
 
         public static void Main(string[] args)
         {
-            Array.Copy(_m1Stations, _allStations, _m1Stations.Length);
-            Array.Copy(_m2Stations, 0, _allStations, _m1Stations.Length, _m2Stations.Length);
-            Array.Copy(_m3Stations, 0, _allStations, _m1Stations.Length + _m2Stations.Length, _m3Stations.Length);
-            Array.Copy(_m4Stations, 0, _allStations, _m1Stations.Length + _m2Stations.Length + _m3Stations.Length, _m4Stations.Length);
-            _allStations = RemoveDuplicates(_allStations);
+            var graph = new Graph.Graph();
+            var station = graph.CreateGraph();
 
-            var station = CreateGraph();
-
-            Console.WriteLine();
-//            Console.WriteLine(prev.Find(Autocomplete(),true).Name);
-            Console.WriteLine("Enter a starting point!");
-            Node start = station.Find(Autocomplete());
-            Console.WriteLine();
-            ResetGraph();
-            Console.WriteLine("Enter a destination!");
-            Node destination = station.Find(Autocomplete());
-            Console.WriteLine();
-            ResetGraph();
-            start.Find(destination.Name, true);
-
-            Matches = Optimize(start, destination);
-            for (int i = Matches.Count - 1; i >= 0; i--)
+            while (true)
             {
-                Console.WriteLine("(" + ((i - Matches.Count) * -1) + ") " + Matches[i].Name);
+                Console.WriteLine();
+                Console.WriteLine("Enter a starting point:");
+//                Console.WriteLine("Írj be egy kiindulási pontot:");
+                var start = station.Find(Autocomplete());
+                if (start == null)
+                {
+                    break;
+                }
+                Console.WriteLine();
+                graph.ResetGraph();
+                Console.WriteLine("Enter a destination:");
+//                Console.WriteLine("Írj be egy végpontot:");
+                var destination = station.Find(Autocomplete());
+                if (destination == null)
+                {
+                    break;
+                }
+                Console.WriteLine();
+                graph.ResetGraph();
+                start.Find(destination.Name, true);
+                graph.ResetGraph();
+
+                Matches = Optimize(start, destination);
+                for (int i = Matches.Count - 1; i >= 0; i--)
+                {
+                    var mLine = String.Format(" ({0})", Matches[i].MetroLines[0]);
+                    if (Matches[i].MetroLines.Length != 1)
+                    {
+                        mLine = mLine.Substring(0, 4);
+                        for (int j = 1; j < Matches[i].MetroLines.Length; j++)
+                        {
+                            mLine += String.Format(", {0}", Matches[i].MetroLines[j]);
+                        }
+                        mLine += ")";
+                    }
+                    Console.WriteLine("(" + ((i - Matches.Count) * -1) + ") " + Matches[i].Name + mLine);
+                }
             }
-
-            Autocomplete();
-
         }
 
         private static List<Node> Optimize(Node start, Node target)
         {
-            List<Node> optimized = new List<Node>(){};
-            for (int i = Matches.Count - 1; i >= 0; i--)
+            if (start == target)
             {
-                if (optimized.Count == 0 && Matches[i] == target)
+                return new List<Node>(){target};
+            }
+            else
+            {
+                List<Node> optimized = new List<Node>() { };
+                for (int i = Matches.Count - 1; i >= 0; i--)
                 {
-                    optimized.Add(Matches[i]);
-                }
-                else if (optimized.Count > 0)
-                {
-                    if (optimized[optimized.Count-1].Neighbors.Contains(Matches[i]))
+                    if (optimized.Count == 0 && Matches[i] == target)
                     {
                         optimized.Add(Matches[i]);
                     }
-                    if (optimized[optimized.Count-1] == start)
+                    else if (optimized.Count > 0)
                     {
-                        break;
+                        if (optimized[optimized.Count - 1].Neighbors.Contains(Matches[i]))
+                        {
+                            optimized.Add(Matches[i]);
+                        }
+                        if (optimized[optimized.Count - 1] == start)
+                        {
+                            break;
+                        }
                     }
                 }
-            }
-            List<Node> noDuplicates = RemoveDuplicates(optimized);
-            optimized.Clear();
-            for (int i = 0; i < noDuplicates.Count; i++)
-            {
-                if (optimized.Count == 0)
+                List<Node> noDuplicates = RemoveDuplicates(optimized);
+                optimized.Clear();
+                for (int i = 0; i < noDuplicates.Count; i++)
                 {
-                    optimized.Add(noDuplicates[i]);
-                }
-                else
-                {
-                    if (optimized[optimized.Count-1].Neighbors.Contains(noDuplicates[i]))
+                    if (optimized.Count == 0)
                     {
                         optimized.Add(noDuplicates[i]);
                     }
                     else
                     {
-                        optimized.Remove(optimized[optimized.Count - 1]);
-                        i--;
+                        if (optimized[optimized.Count - 1].Neighbors.Contains(noDuplicates[i]))
+                        {
+                            optimized.Add(noDuplicates[i]);
+                        }
+                        else
+                        {
+                            optimized.Remove(optimized[optimized.Count - 1]);
+                            i--;
+                        }
                     }
                 }
+                return optimized;
             }
-            return optimized;
         }
-
-        private static void ResetGraph()
-        {
-            for (int i = 0; i < VisitedStations.Count; i++)
-            {
-                VisitedStations[i].Visited = false;
-            }
-            VisitedStations.Clear();
-        }
-
-        private static Node CreateGraph()
-        {
-            Node prev = new Node(_m1Stations[0]);
-            Node deak = null;
-
-            for (int i = 1; i < _m1Stations.Length; i++)
-            {
-                Node node = new Node(_m1Stations[i], prev);
-                prev = node;
-                if (_m1Stations[i] == "Deák Ferenc tér")
-                {
-                    deak = node;
-                }
-            }
-            Node keleti = null;
-            prev = new Node(_m2Stations[0]);
-            for (int i = 1; i < _m2Stations.Length; i++)
-            {
-                Node node;
-                if (_m2Stations[i] == "Deák Ferenc tér")
-                {
-                    node = deak;
-                    deak.Neighbors.Add(prev);
-//                    Console.WriteLine(prev.Name+ " ADDED TO " + deak.Name);
-                    prev.Neighbors.Add(deak);
-//                    Console.WriteLine(deak.Name+ " ADDED TO " + prev.Name);
-
-                }
-                else
-                {
-                    node = new Node(_m2Stations[i], prev);
-                    if (_m3Stations[i] == "Keleti pályaudvar")
-                    {
-                        keleti = new Node(_m3Stations[i], prev);
-                    }
-                }
-                prev = node;
-            }
-            Node kalvin = null;
-            prev = new Node(_m3Stations[0]);
-            for (int i = 1; i < _m3Stations.Length; i++)
-            {
-                Node node;
-                if (_m3Stations[i] == "Deák Ferenc tér")
-                {
-                    node = deak;
-                    deak.Neighbors.Add(prev);
-//                    Console.WriteLine(prev.Name+ " ADDED TO " + deak.Name);
-                    prev.Neighbors.Add(deak);
-//                    Console.WriteLine(deak.Name+ " ADDED TO " + prev.Name);
-
-
-                }
-                else
-                {
-                    node = new Node(_m3Stations[i], prev);
-                    if (_m3Stations[i] == "Kálvin tér")
-                    {
-                        kalvin = new Node(_m3Stations[i], prev);
-                    }
-                }
-                prev = node;
-            }
-            prev = new Node(_m4Stations[0]);
-            for (int i = 1; i < _m4Stations.Length; i++)
-            {
-                Node node;
-                if (_m4Stations[i] == "Kálvin tér")
-                {
-                    node = kalvin;
-                    kalvin.Neighbors.Add(prev);
-                    prev.Neighbors.Add(kalvin);
-
-
-                }
-                else if (_m4Stations[i] == "Keleti pályaudvar")
-                {
-                    node = keleti;
-                    keleti.Neighbors.Add(prev);
-                    prev.Neighbors.Add(keleti);
-
-
-                }
-                else
-                {
-                    node = new Node(_m4Stations[i], prev);
-                }
-                prev = node;
-            }
-            return prev;
-        }
-
 
         private static string Autocomplete()
         {
@@ -249,15 +144,28 @@ namespace ConsoleApplication
                         Console.SetCursorPosition(0, Console.CursorTop - 1);
                         Console.WriteLine();
                         ClearCurrentConsoleLine();
-//                        Console.WriteLine();
                         Console.Write(output);
                         retString = output;
                         curIndex = output.Length;
                         break;
 
+                    case ConsoleKey.Escape:
+                        return null;
+
                     case ConsoleKey.Enter:
                         Console.WriteLine();
-                        return retString;
+                        if (_allStations.Contains(retString))
+                        {
+                            return retString;
+                        }
+                        else
+                        {
+                            ClearPreviousConsoleLine();
+                            Console.Write("That's not a valid metro station." + Environment.NewLine);
+//                            Console.Write("Ilyen metró állomás nem létezik." + Environment.NewLine);
+                            Console.Write(retString);
+                        }
+                        break;
 
                     case ConsoleKey.Backspace:
                          if (curIndex > 0)
@@ -293,16 +201,24 @@ namespace ConsoleApplication
             return result;
         }
 
-        public static List<Node> RemoveDuplicates(List<Node> l)
+        public static List<T> RemoveDuplicates<T>(List<T> list)
         {
-            HashSet<Node> set = new HashSet<Node>(l);
-            List<Node> result = l.Distinct().ToList();
+            HashSet<T> set = new HashSet<T>(list);
+            List<T> result = list.Distinct().ToList();
             return result;
         }
         public static void ClearCurrentConsoleLine()
         {
             int currentLineCursor = Console.CursorTop;
             Console.SetCursorPosition(0, Console.CursorTop);
+            Console.Write(new string(' ', Console.WindowWidth));
+            Console.SetCursorPosition(0, currentLineCursor);
+        }
+
+        public static void ClearPreviousConsoleLine()
+        {
+            int currentLineCursor = Console.CursorTop -1;
+            Console.SetCursorPosition(0, Console.CursorTop -1);
             Console.Write(new string(' ', Console.WindowWidth));
             Console.SetCursorPosition(0, currentLineCursor);
         }
