@@ -53,15 +53,15 @@ namespace ConsoleApplication.Graph
 
                 if (_neighbors[i].Name == target)
                 {
-                    Program.Matches.Add(this);
-                    Program.Matches.Add(Neighbors[i]);
+                    Graph.Matches.Add(this);
+                    Graph.Matches.Add(Neighbors[i]);
                     return _neighbors[i];
                 }
                 else if (!_neighbors[i].Visited && ret == null)
                 {
                     if (log)
                     {
-                        Program.Matches.Add(this);
+                        Graph.Matches.Add(this);
                     }
                     ret = log ? _neighbors[i].Find(target, true) : _neighbors[i].Find(target);
                 }

@@ -26,6 +26,14 @@ namespace ConsoleApplication.Graph
             "Móricz Zsigmond körtér", "Újbuda központ", "Bikás park", "Kelenföldi pályaudvar"
         };
 
+        private static List<Node> _matches = new List<Node>();
+
+        public static List<Node> Matches
+        {
+            get { return _matches; }
+            set { _matches = value; }
+        }
+
         private static List<Node> _visitedStations = new List<Node>();
 
         public static List<Node> VisitedStations
@@ -130,6 +138,58 @@ namespace ConsoleApplication.Graph
                 prev = node;
             }
             return prev;
+        }
+
+        public static List<Node> Optimize(Node start, Node target)
+        {
+            if (start == target)
+            {
+                return new List<Node>(){target};
+            }
+            else
+            {
+                List<Node> optimized = new List<Node>() { };
+                for (int i = Matches.Count - 1; i >= 0; i--)
+                {
+                    if (optimized.Count == 0 && Matches[i] == target)
+                    {
+                        optimized.Add(Matches[i]);
+                    }
+                    else if (optimized.Count > 0)
+                    {
+                        if (optimized[optimized.Count - 1].Neighbors.Contains(Matches[i]))
+                        {
+                            optimized.Add(Matches[i]);
+                        }
+                        if (optimized[optimized.Count - 1] == start)
+                        {
+                            break;
+                        }
+                    }
+                }
+                List<Node> noDuplicates = Program.RemoveDuplicates(optimized);
+                optimized.Clear();
+                for (int i = 0; i < noDuplicates.Count; i++)
+                {
+                    if (optimized.Count == 0)
+                    {
+                        optimized.Add(noDuplicates[i]);
+                    }
+                    else
+                    {
+                        if (optimized[optimized.Count - 1].Neighbors.Contains(noDuplicates[i]))
+                        {
+                            optimized.Add(noDuplicates[i]);
+                        }
+                        else
+                        {
+                            optimized.Remove(optimized[optimized.Count - 1]);
+                            i--;
+                        }
+                    }
+                }
+                return optimized;
+            }
         }
     }
 }

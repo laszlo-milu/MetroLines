@@ -22,14 +22,6 @@ namespace ConsoleApplication
                                                                          .Concat(Graph.Graph.m4Stations)
                                                                          .ToList());
 
-        private static List<Node> _matches = new List<Node>();
-
-        public static List<Node> Matches
-        {
-            get { return _matches; }
-            set { _matches = value; }
-        }
-
         public static void Main(string[] args)
         {
             var graph = new Graph.Graph();
@@ -59,73 +51,23 @@ namespace ConsoleApplication
                 start.Find(destination.Name, true);
                 graph.ResetGraph();
 
-                Matches = Optimize(start, destination);
-                for (int i = Matches.Count - 1; i >= 0; i--)
+                var matches = Graph.Graph.Matches;
+
+                matches = Graph.Graph.Optimize(start, destination);
+                for (int i = matches.Count - 1; i >= 0; i--)
                 {
-                    var mLine = String.Format(" ({0})", Matches[i].MetroLines[0]);
-                    if (Matches[i].MetroLines.Length != 1)
+                    var mLine = String.Format(" ({0})", matches[i].MetroLines[0]);
+                    if (matches[i].MetroLines.Length != 1)
                     {
                         mLine = mLine.Substring(0, 4);
-                        for (int j = 1; j < Matches[i].MetroLines.Length; j++)
+                        for (int j = 1; j < matches[i].MetroLines.Length; j++)
                         {
-                            mLine += String.Format(", {0}", Matches[i].MetroLines[j]);
+                            mLine += String.Format(", {0}", matches[i].MetroLines[j]);
                         }
                         mLine += ")";
                     }
-                    Console.WriteLine("(" + ((i - Matches.Count) * -1) + ") " + Matches[i].Name + mLine);
+                    Console.WriteLine("(" + ((i - matches.Count) * -1) + ") " + matches[i].Name + mLine);
                 }
-            }
-        }
-
-        private static List<Node> Optimize(Node start, Node target)
-        {
-            if (start == target)
-            {
-                return new List<Node>(){target};
-            }
-            else
-            {
-                List<Node> optimized = new List<Node>() { };
-                for (int i = Matches.Count - 1; i >= 0; i--)
-                {
-                    if (optimized.Count == 0 && Matches[i] == target)
-                    {
-                        optimized.Add(Matches[i]);
-                    }
-                    else if (optimized.Count > 0)
-                    {
-                        if (optimized[optimized.Count - 1].Neighbors.Contains(Matches[i]))
-                        {
-                            optimized.Add(Matches[i]);
-                        }
-                        if (optimized[optimized.Count - 1] == start)
-                        {
-                            break;
-                        }
-                    }
-                }
-                List<Node> noDuplicates = RemoveDuplicates(optimized);
-                optimized.Clear();
-                for (int i = 0; i < noDuplicates.Count; i++)
-                {
-                    if (optimized.Count == 0)
-                    {
-                        optimized.Add(noDuplicates[i]);
-                    }
-                    else
-                    {
-                        if (optimized[optimized.Count - 1].Neighbors.Contains(noDuplicates[i]))
-                        {
-                            optimized.Add(noDuplicates[i]);
-                        }
-                        else
-                        {
-                            optimized.Remove(optimized[optimized.Count - 1]);
-                            i--;
-                        }
-                    }
-                }
-                return optimized;
             }
         }
 
