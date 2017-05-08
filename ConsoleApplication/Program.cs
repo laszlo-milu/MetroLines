@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using ConsoleApplication.Graph;
 using ConsoleApplication.Search;
 namespace ConsoleApplication
 {
@@ -17,7 +16,8 @@ namespace ConsoleApplication
             ConsoleKey.OemPeriod, ConsoleKey.OemMinus, ConsoleKey.OemComma, ConsoleKey.Spacebar
         };
 
-        private static readonly List<string> _allStations = RemoveDuplicates(Graph.Graph.m1Stations.Concat(Graph.Graph.m2Stations)
+        private static readonly List<string> _allStations = RemoveDuplicates(Graph.Graph.m1Stations
+                                                                         .Concat(Graph.Graph.m2Stations)
                                                                          .Concat(Graph.Graph.m3Stations)
                                                                          .Concat(Graph.Graph.m4Stations)
                                                                          .ToList());
@@ -31,7 +31,6 @@ namespace ConsoleApplication
             {
                 Console.WriteLine();
                 Console.WriteLine("Enter a starting point:");
-//                Console.WriteLine("Írj be egy kiindulási pontot:");
                 var start = station.Find(Autocomplete());
                 if (start == null)
                 {
@@ -40,7 +39,6 @@ namespace ConsoleApplication
                 Console.WriteLine();
                 graph.ResetGraph();
                 Console.WriteLine("Enter a destination:");
-//                Console.WriteLine("Írj be egy végpontot:");
                 var destination = station.Find(Autocomplete());
                 if (destination == null)
                 {
@@ -82,7 +80,9 @@ namespace ConsoleApplication
                 switch (readKeyResult.Key)
                 {
                     case ConsoleKey.Tab:
-                        output = output.Equals(retString) ? StringSearch.AutoComplete(retString, _allStations, true) : StringSearch.AutoComplete(retString, _allStations);
+                        output = output.Equals(retString)
+                            ? StringSearch.AutoComplete(retString, _allStations, true)
+                            : StringSearch.AutoComplete(retString, _allStations);
                         Console.SetCursorPosition(0, Console.CursorTop - 1);
                         Console.WriteLine();
                         ClearCurrentConsoleLine();
@@ -102,9 +102,8 @@ namespace ConsoleApplication
                         }
                         else
                         {
-                            ClearPreviousConsoleLine();
+                            ClearCurrentConsoleLine(1);
                             Console.Write("That's not a valid metro station." + Environment.NewLine);
-//                            Console.Write("Ilyen metró állomás nem létezik." + Environment.NewLine);
                             Console.Write(retString);
                         }
                         break;
@@ -122,14 +121,13 @@ namespace ConsoleApplication
                     default:
                         if (_characters.Contains(readKeyResult.Key))
                         {
-                            retString += readKeyResult.KeyChar;
-                            Console.Write(readKeyResult.KeyChar);
-                            curIndex++;
+                            if (retString.Length < Console.WindowWidth - 1)
+                            {
+                                retString += readKeyResult.KeyChar;
+                                Console.Write(readKeyResult.KeyChar);
+                                curIndex++;
+                            }
                         }
-//                        else
-//                        {
-//                            Console.WriteLine(readKeyResult.Key.ToString());
-//                        }
                         break;
                 }
             }
@@ -149,18 +147,10 @@ namespace ConsoleApplication
             List<T> result = list.Distinct().ToList();
             return result;
         }
-        public static void ClearCurrentConsoleLine()
+        public static void ClearCurrentConsoleLine(int i=0)
         {
-            int currentLineCursor = Console.CursorTop;
-            Console.SetCursorPosition(0, Console.CursorTop);
-            Console.Write(new string(' ', Console.WindowWidth));
-            Console.SetCursorPosition(0, currentLineCursor);
-        }
-
-        public static void ClearPreviousConsoleLine()
-        {
-            int currentLineCursor = Console.CursorTop -1;
-            Console.SetCursorPosition(0, Console.CursorTop -1);
+            int currentLineCursor = Console.CursorTop - i;
+            Console.SetCursorPosition(0, Console.CursorTop - i);
             Console.Write(new string(' ', Console.WindowWidth));
             Console.SetCursorPosition(0, currentLineCursor);
         }
