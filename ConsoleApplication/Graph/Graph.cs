@@ -53,13 +53,13 @@ namespace ConsoleApplication.Graph
 
         public Node CreateGraph()
         {
-            var m1 = new[] {"M1"};
-            var prev = new Node(m1Stations[0], m1);
+            var m = new[] {"M1"};
+            var prev = new Node(m1Stations[0], m);
             Node deak = null;
 
             for (int i = 1; i < m1Stations.Count; i++)
             {
-                Node node = new Node(m1Stations[i], m1, prev);
+                Node node = new Node(m1Stations[i], m, prev);
                 prev = node;
                 if (m1Stations[i] == "Deák Ferenc tér")
                 {
@@ -68,9 +68,9 @@ namespace ConsoleApplication.Graph
                 }
             }
             Node keleti = null;
-            var m2 = new[] {"M2"};
+            m = new[] {"M2"};
 
-            prev = new Node(m2Stations[0], m2);
+            prev = new Node(m2Stations[0], m);
             for (int i = 1; i < m2Stations.Count; i++)
             {
                 Node node;
@@ -82,7 +82,7 @@ namespace ConsoleApplication.Graph
                 }
                 else
                 {
-                    node = new Node(m2Stations[i], m2, prev);
+                    node = new Node(m2Stations[i], m, prev);
                     if (m3Stations[i] == "Keleti pályaudvar")
                     {
                         node = new Node(m3Stations[i], new[] {"M2", "M4"}, prev);
@@ -91,9 +91,9 @@ namespace ConsoleApplication.Graph
                 }
                 prev = node;
             }
-            var m3 = new[] {"M3"};
+            m = new[] {"M3"};
             Node kalvin = null;
-            prev = new Node(m3Stations[0], m3);
+            prev = new Node(m3Stations[0], m);
             for (int i = 1; i < m3Stations.Count; i++)
             {
                 Node node;
@@ -105,7 +105,7 @@ namespace ConsoleApplication.Graph
                 }
                 else
                 {
-                    node = new Node(m3Stations[i], m3, prev);
+                    node = new Node(m3Stations[i], m, prev);
                     if (m3Stations[i] == "Kálvin tér")
                     {
                         node = new Node(m3Stations[i], new []{"M3", "M4"}, prev);
@@ -114,8 +114,8 @@ namespace ConsoleApplication.Graph
                 }
                 prev = node;
             }
-            var m4 = new[] {"M4"};
-            prev = new Node(m4Stations[0], m4);
+            m = new[] {"M4"};
+            prev = new Node(m4Stations[0], m);
             for (int i = 1; i < m4Stations.Count; i++)
             {
                 Node node;
@@ -133,7 +133,7 @@ namespace ConsoleApplication.Graph
                 }
                 else
                 {
-                    node = new Node(m4Stations[i], m4, prev);
+                    node = new Node(m4Stations[i], m, prev);
                 }
                 prev = node;
             }
