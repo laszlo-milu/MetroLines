@@ -24,49 +24,53 @@ namespace ConsoleApplication
 
         public static void Main(string[] args)
         {
-            var graph = new Graph.Graph();
-            var station = graph.CreateGraph();
-
-            while (true)
-            {
-                Console.WriteLine();
-                Console.WriteLine("Enter a starting point:");
-                var start = station.Find(Autocomplete());
-                if (start == null)
-                {
-                    break;
-                }
-                Console.WriteLine();
-                graph.ResetGraph();
-                Console.WriteLine("Enter a destination:");
-                var destination = station.Find(Autocomplete());
-                if (destination == null)
-                {
-                    break;
-                }
-                Console.WriteLine();
-                graph.ResetGraph();
-                start.Find(destination.Name, true);
-                graph.ResetGraph();
-
-                var matches = Graph.Graph.Matches;
-
-                matches = Graph.Graph.Optimize(start, destination);
-                for (int i = matches.Count - 1; i >= 0; i--)
-                {
-                    var mLine = String.Format(" ({0})", matches[i].MetroLines[0]);
-                    if (matches[i].MetroLines.Length != 1)
-                    {
-                        mLine = mLine.Substring(0, 4);
-                        for (int j = 1; j < matches[i].MetroLines.Length; j++)
-                        {
-                            mLine += String.Format(", {0}", matches[i].MetroLines[j]);
-                        }
-                        mLine += ")";
-                    }
-                    Console.WriteLine("(" + ((i - matches.Count) * -1) + ") " + matches[i].Name + mLine);
-                }
-            }
+            var graph = new ImprovedGraph.ImprovedGraph().createGraph();
+            var deak = graph.findStation("Deák Ferenc tér");
+            Autocomplete();
+            Autocomplete();
+//            var graph = new Graph.Graph();
+//            var station = graph.CreateGraph();
+//
+//            while (true)
+//            {
+//                Console.WriteLine();
+//                Console.WriteLine("Enter a starting point:");
+//                var start = station.Find(Autocomplete());
+//                if (start == null)
+//                {
+//                    break;
+//                }
+//                Console.WriteLine();
+//                graph.ResetGraph();
+//                Console.WriteLine("Enter a destination:");
+//                var destination = station.Find(Autocomplete());
+//                if (destination == null)
+//                {
+//                    break;
+//                }
+//                Console.WriteLine();
+//                graph.ResetGraph();
+//                start.Find(destination.Name, true);
+//                graph.ResetGraph();
+//
+//                var matches = Graph.Graph.Matches;
+//
+//                matches = Graph.Graph.Optimize(start, destination);
+//                for (int i = matches.Count - 1; i >= 0; i--)
+//                {
+//                    var mLine = String.Format(" ({0})", matches[i].MetroLines[0]);
+//                    if (matches[i].MetroLines.Length != 1)
+//                    {
+//                        mLine = mLine.Substring(0, 4);
+//                        for (int j = 1; j < matches[i].MetroLines.Length; j++)
+//                        {
+//                            mLine += String.Format(", {0}", matches[i].MetroLines[j]);
+//                        }
+//                        mLine += ")";
+//                    }
+//                    Console.WriteLine("(" + ((i - matches.Count) * -1) + ") " + matches[i].Name + mLine);
+//                }
+//            }
         }
 
         private static string Autocomplete()
