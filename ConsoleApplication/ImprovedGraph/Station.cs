@@ -7,7 +7,7 @@ namespace ConsoleApplication.ImprovedGraph
     {
         private readonly string _name;
         private readonly bool _exchange;
-        private readonly string[] _metroLines;
+        private readonly MetroLine[] _metroLines;
         private List<Route> _routes = new List<Route>();
 
         public List<Route> Routes
@@ -15,7 +15,7 @@ namespace ConsoleApplication.ImprovedGraph
             get { return _routes; }
         }
 
-        public Station(string name, bool exchange, string[] metroLines)
+        public Station(string name, bool exchange, MetroLine[] metroLines)
         {
             _name = name;
             _exchange = exchange;

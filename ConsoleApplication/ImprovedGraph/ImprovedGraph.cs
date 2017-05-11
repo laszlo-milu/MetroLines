@@ -32,16 +32,17 @@ namespace ConsoleApplication.ImprovedGraph
         private List<Station> _allStations = new List<Station>();
         private List<Route> _allRoutes = new List<Route>();
 
+        private static MetroLine _m1 = new MetroLine("M1", M1Stations, 400, 50);
+        private static MetroLine _m2 = new MetroLine("M2", M2Stations, 936, 70);
+        private static MetroLine _m3 = new MetroLine("M3", M3Stations, 825, 60);
+        private static MetroLine _m4 = new MetroLine("M4", M4Stations, 740, 80);
+        private static MetroLine[] _allMetroLines = {_m1, _m2, _m3, _m4};
+
         public ImprovedGraph createGraph()
         {
-            var m1 = new MetroLine(M1Stations, 400, 50);
-            var m2 = new MetroLine(M2Stations, 936, 70);
-            var m3 = new MetroLine(M3Stations, 825, 60);
-            var m4 = new MetroLine(M4Stations, 740, 80);
-            var allMetroLines = new[] {m1, m2, m3, m4};
             Station previous = null;
             Station current = null;
-            foreach (var metroLine in allMetroLines)
+            foreach (var metroLine in _allMetroLines)
             {
                 for (int i = 0; i < metroLine.Stations.Count; i++)
                 {
@@ -77,14 +78,14 @@ namespace ConsoleApplication.ImprovedGraph
             var station = findStation(name);
             if (station != null) return station;
             var exchangeCounter = 0;
-            var metroLines = new List<string>();
-            var allStations = new[] {M1Stations, M2Stations, M3Stations, M4Stations};
-            for (var i = 0; i < allStations.Length; i++)
+            var metroLines = new List<MetroLine>();
+            var allMetroLines = new[] {_m1, _m2, _m3, _m4};
+            foreach (MetroLine metroLine in allMetroLines)
             {
-                if (allStations[i].Contains(name))
+                if (metroLine.Stations.Contains(name))
                 {
                     exchangeCounter++;
-                    metroLines.Add("M" + (i+1));
+                    metroLines.Add(metroLine);
                 }
             }
             station = new Station(name, (exchangeCounter > 1), metroLines.ToArray());
@@ -94,7 +95,7 @@ namespace ConsoleApplication.ImprovedGraph
 
         private Route createRoute(Station[] stations, int distance, int maxSpeed)
         {
-            var route = new Route(stations, distance, (int)(maxSpeed*3.6)/distance);
+            var route = new Route(stations, distance, (int)(distance/(maxSpeed*3.6)*10));
             foreach (var station in stations)
             {
                 station.AddRoute(route);

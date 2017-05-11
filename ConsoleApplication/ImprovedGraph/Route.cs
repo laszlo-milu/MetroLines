@@ -8,7 +8,6 @@ namespace ConsoleApplication.ImprovedGraph
         private readonly Station[] _stations;
         private readonly int _distance; // in meters
         private readonly int _time; // in seconds
-
         public Route(Station[] stations, int distance, int time)
         {
             _stations = stations;
