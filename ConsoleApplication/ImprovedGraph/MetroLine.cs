@@ -1,17 +1,24 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 
 namespace ConsoleApplication.ImprovedGraph
 {
     public class MetroLine
     {
         private readonly string _name;
-        private readonly List<string> _stations;
+        private readonly List<string> _stationNames;
         private readonly int _averageDistance;
         private readonly int _maxSpeed;
+        private readonly ConsoleColor _backgroundColor;
 
-        public List<string> Stations
+        public ConsoleColor BackgroundColor
         {
-            get { return _stations; }
+            get { return _backgroundColor; }
+        }
+
+        public List<string> StationNames
+        {
+            get { return _stationNames; }
         }
 
         public int AverageDistance
@@ -29,12 +36,14 @@ namespace ConsoleApplication.ImprovedGraph
             get { return _name; }
         }
 
-        public MetroLine(string name, List<string> stations, int averageDistance, int maxSpeed)
+        public MetroLine(string name, List<string> stationNames, int averageDistance, int maxSpeed, ConsoleColor backgroundColor)
         {
             _name = name;
-            _stations = stations;
+            _stationNames = stationNames;
             _averageDistance = averageDistance;
             _maxSpeed = maxSpeed;
+            _backgroundColor = backgroundColor;
+
         }
     }
 }

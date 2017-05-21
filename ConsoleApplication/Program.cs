@@ -1,6 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Security.Policy;
+using ConsoleApplication.ImprovedGraph;
 using ConsoleApplication.Search;
 namespace ConsoleApplication
 {
@@ -16,61 +18,128 @@ namespace ConsoleApplication
             ConsoleKey.OemPeriod, ConsoleKey.OemMinus, ConsoleKey.OemComma, ConsoleKey.Spacebar
         };
 
-        private static readonly List<string> _allStations = RemoveDuplicates(Graph.Graph.m1Stations
-                                                                         .Concat(Graph.Graph.m2Stations)
-                                                                         .Concat(Graph.Graph.m3Stations)
-                                                                         .Concat(Graph.Graph.m4Stations)
+        private static readonly List<string> _allStations = RemoveDuplicates(ImprovedGraph.ImprovedGraph.M1Stations
+                                                                         .Concat(ImprovedGraph.ImprovedGraph.M2Stations)
+                                                                         .Concat(ImprovedGraph.ImprovedGraph.M3Stations)
+                                                                         .Concat(ImprovedGraph.ImprovedGraph.M4Stations)
+                                                                         .Concat(ImprovedGraph.ImprovedGraph.M5Stations)
                                                                          .ToList());
 
         public static void Main(string[] args)
         {
-            var graph = new ImprovedGraph.ImprovedGraph().createGraph();
-            var deak = graph.findStation("Deák Ferenc tér");
-            Autocomplete();
-            Autocomplete();
-//            var graph = new Graph.Graph();
-//            var station = graph.CreateGraph();
-//
-//            while (true)
-//            {
-//                Console.WriteLine();
-//                Console.WriteLine("Enter a starting point:");
-//                var start = station.Find(Autocomplete());
-//                if (start == null)
-//                {
-//                    break;
-//                }
-//                Console.WriteLine();
-//                graph.ResetGraph();
-//                Console.WriteLine("Enter a destination:");
-//                var destination = station.Find(Autocomplete());
-//                if (destination == null)
-//                {
-//                    break;
-//                }
-//                Console.WriteLine();
-//                graph.ResetGraph();
-//                start.Find(destination.Name, true);
-//                graph.ResetGraph();
-//
-//                var matches = Graph.Graph.Matches;
-//
-//                matches = Graph.Graph.Optimize(start, destination);
-//                for (int i = matches.Count - 1; i >= 0; i--)
-//                {
-//                    var mLine = String.Format(" ({0})", matches[i].MetroLines[0]);
-//                    if (matches[i].MetroLines.Length != 1)
-//                    {
-//                        mLine = mLine.Substring(0, 4);
-//                        for (int j = 1; j < matches[i].MetroLines.Length; j++)
-//                        {
-//                            mLine += String.Format(", {0}", matches[i].MetroLines[j]);
-//                        }
-//                        mLine += ")";
-//                    }
-//                    Console.WriteLine("(" + ((i - matches.Count) * -1) + ") " + matches[i].Name + mLine);
-//                }
-//            }
+            while (true)
+            {
+                var graph = new ImprovedGraph.ImprovedGraph().createGraph();
+
+
+                Console.WriteLine();
+                Console.WriteLine("Enter a starting point:");
+                var start = graph.findStation(Autocomplete());
+                if (start == null)
+                {
+                    break;
+                }
+                Station destination;
+                bool first = true;
+                do
+                {
+                    Console.WriteLine();
+                    Console.WriteLine(first
+                        ? "Enter a destination:"
+                        : "Enter a destination different from the starting point:");
+                    destination = graph.findStation(Autocomplete());
+                    if (destination == null)
+                    {
+                        break;
+                    }
+                    first = false;
+
+                } while (start.Equals(destination));
+                if (destination == null)
+                {
+                    break;
+                }
+                Console.WriteLine();
+                var watch = System.Diagnostics.Stopwatch.StartNew();
+                graph.findCombinations(start, destination);
+                watch.Stop();
+                Console.WriteLine(watch.ElapsedMilliseconds + "ms");
+//                PrintAllStationsAllRoutes(graph);
+                Console.WriteLine(String.Format("All Combinations: {0}", graph.PossibleStations.Count));
+                foreach (var stations in graph.PossibleStations)
+                {
+                    PrintStations(stations);
+                    Console.WriteLine(new String('_', Console.BufferWidth));
+                }
+                Console.Write("Fewest Exchanges:");
+                PrintStations(graph.findFewestExchangeRoute());
+                Console.WriteLine();
+                Console.Write("Fastest Route:");
+                PrintStations(graph.findFastestRoute());
+                Console.WriteLine();
+                Console.Write("Shortest Distance:");
+                PrintStations(graph.findShortestRoute());
+            }
+        }
+
+        private static void PrintStations(List<Station> stations)
+        {
+            for (var i = 0; i < stations.Count; i++)
+            {
+                if (0 < i && i < stations.Count-1)
+                {
+                    ColorStation(stations[i], stations[i-1], stations[i+1]);
+                    Console.Write(" > ");
+                }
+                else if (i > 0)
+                {
+                    var c = stations[i].MetroLines.ToList().Intersect(stations[i-1].MetroLines.ToList()).ToArray()[0].BackgroundColor;
+                    ColorStation(stations[i], c);
+                } else if (i < stations.Count - 1)
+                {
+                    var c = stations[i].MetroLines.ToList().Intersect(stations[i+1].MetroLines.ToList()).ToArray()[0].BackgroundColor;
+                    ColorStation(stations[i], c);
+                    Console.Write(" > ");
+
+                }
+            }
+            Console.WriteLine();
+        }
+
+        private static void ColorStation(Station current, Station previous, Station next)
+        {
+            ConsoleColor color1 = current.MetroLines.ToList().Intersect(previous.MetroLines.ToList()).ToArray()[0].BackgroundColor;
+            ConsoleColor color2 = current.MetroLines.ToList().Intersect(next.MetroLines.ToList()).ToArray()[0].BackgroundColor;
+            Console.ForegroundColor = ConsoleColor.Black;
+            Console.BackgroundColor = color1;
+            Console.Write(" " + current.Name.Substring(0, current.Name.Length/2));
+            Console.BackgroundColor = color2;
+            Console.Write(current.Name.Substring(current.Name.Length/2) + " ");
+            Console.ResetColor();
+        }
+
+        private static void ColorStation(Station station, ConsoleColor color)
+        {
+            Console.ForegroundColor = ConsoleColor.Black;
+            Console.BackgroundColor = color;
+            Console.Write(String.Format(" {0} ", station.Name));
+            Console.ResetColor();
+        }
+
+
+        private static void PrintAllStationsAllRoutes(ImprovedGraph.ImprovedGraph graph)
+        {
+            for (int i = 0; i < graph.PossibleStations.Count; i++)
+            {
+                Console.WriteLine(graph.PossibleStations[i][0].Name);
+                for (int j = 1; j < graph.PossibleStations[i].Count; j++)
+                {
+                    Console.WriteLine(graph.PossibleRoutes[i][j-1].Stations[0].Name + " - " + graph.PossibleRoutes[i][j-1].Stations[1].Name);
+                    Console.WriteLine(graph.PossibleStations[i][j].Name);
+
+                }
+                Console.WriteLine("_______________________________________");
+            }
         }
 
         private static string Autocomplete()
